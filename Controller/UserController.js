@@ -1,12 +1,39 @@
 const User = require('../models/User');
+const bcrypt = require('bcrypt');
 
-const addUser = async (req, res) => {
-  const { name, email, phone } = req.body;
-  if (!name || !email || !phone) {
+const registerUser = async (req, res) => {
+  const { name, email, phone, password } = req.body;
+  if (!name || !email || !phone || !password) {
     return res.status(400).json({ message: 'All fields are required' });
   }
-  const user = new User({ name, email, phone });
+  // Check if user already exists
   try {
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: 'User already exists' });
+    }
+
+    // Hash the password before saving
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Create new user
+    const user = new User({ name, email, phone, password: hashedPassword });
+    await user.save();
+    res.status(201).json({ message: 'User registered successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error registering user', error });
+  }
+};
+
+const addUser = async (req, res) => {
+  const { name, email, phone, password } = req.body;
+  if (!name || !email || !phone || !password) {
+    return res.status(400).json({ message: 'All fields are required' });
+  }
+  try {
+    // Hash the password before saving
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const user = new User({ name, email, phone, password: hashedPassword });
     await user.save();
     res.status(201).json(user);
   } catch (error) {
@@ -59,4 +86,4 @@ const deleteUser = async (req, res) => {
   }
 };
 
-module.exports = { addUser, getUsers, getUserById, updateUser, deleteUser };
+module.exports = { addUser, getUsers, getUserById, updateUser, deleteUser, registerUser };
