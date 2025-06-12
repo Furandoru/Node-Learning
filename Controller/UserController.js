@@ -15,8 +15,10 @@ const addUser = async (req, res) => {
 };
 
 const getUsers = async (req, res) => {
+const query ={};
+const sort = { name: 1 }; 
   try {
-    const users = await User.find();
+    const users = await User.find().sort(sort);
     res.status(200).json(users);
   } catch (error) {
     res.status(500).json({ message: 'Error fetching users', error });

@@ -8,4 +8,4 @@ router.get('/:id', getPropertyById);
 router.put('/:id', updateProperty);
 router.delete('/:id', deleteProperty);
 
-module.exports = router;
+module.exports = router;    

@@ -19,7 +19,9 @@ const addProperty = async (req, res) => {
 
 const getProperties = async (req, res) => {
   try {
-    const properties = await Property.find();
+    const query = {};
+    const sort = { createdAt: -1 };
+    const properties = await Property.find().sort(sort);
     res.status(200).json(properties);
   } catch (error) {
     res.status(500).json({ message: 'Error fetching properties', error });
@@ -58,7 +60,8 @@ const updateProperty = async (req, res) => {
 
 const deleteProperty = async (req, res) => {
   const { id } = req.params;
-  const { userId } = req.body;
+  const { userId } = req.query;
+
   if (!userId) return res.status(400).json({ message: 'User ID (userId) is required for deletion' });
   const user = await User.findById(userId);
   if (!user) return res.status(404).json({ message: 'User not found' });
