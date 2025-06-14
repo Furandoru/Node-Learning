@@ -1,12 +1,17 @@
 const express = require('express');
-const { addUser, getUsers, getUserById, updateUser, deleteUser ,registerUser } = require('../Controller/UserController');
 const router = express.Router();
 
-//register user routes
-router.post('/register', registerUser);
+const { addUser, getUsers, getUserById, updateUser, deleteUser, registerUser, loginUser } = require('../Controller/UserController');
+const { protect } = require('../middleware/authMiddleware');
+// Optional: protected route example
+router.get('/profile', protect, (req, res) => {
+  res.json({ message: 'This is protected data', userId: req.user });
+});
 
-// User Routes
-router.post('/add', addUser);
+// Admin or utility routes
+router.post('/register', registerUser);
+router.post('/login', loginUser);
+router.post('/', addUser);
 router.get('/', getUsers);
 router.get('/:id', getUserById);
 router.put('/:id', updateUser);
