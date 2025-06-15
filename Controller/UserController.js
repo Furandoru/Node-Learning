@@ -1,15 +1,10 @@
 const User = require('../models/User');
+const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const generateToken = require('../utils/generateToken');
-const express = require('express');
-const router = express.Router();
 
-/**
- * User Controller
- * Handles user registration, login, addition, retrieval, updating, and deletion.
- */
 
-// Register User
+// @desc Register new user (public)
 const registerUser = async (req, res) => {
   const { name, email, phone, password } = req.body;
   if (!name || !email || !phone || !password) {
@@ -22,21 +17,19 @@ const registerUser = async (req, res) => {
       return res.status(400).json({ message: 'User already exists' });
     }
 
-    // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = new User({ name, email, phone, password: hashedPassword });
     await user.save();
 
-    // Generate token
     const token = generateToken(user._id);
     res.status(201).json({ token });
   } catch (error) {
-    console.error('Error registering user:', error); // Log error for debugging
+    console.error('Error registering user:', error);
     res.status(500).json({ message: 'Error registering user', error });
   }
 };
 
-// Login User
+// @desc Login user
 const loginUser = async (req, res) => {
   const { email, password } = req.body;
 
@@ -46,16 +39,16 @@ const loginUser = async (req, res) => {
 
   try {
     const user = await User.findOne({ email });
-    console.log('User found:', user); // Debug log to check the user object
-
     if (!user) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
-    // Compare the input password with the stored hash
-    const isMatch = await bcrypt.compare(password, user.password);
-    console.log('Password match:', isMatch); // This will show if passwords match
+    // Ensure user.password is a string and not undefined/null
+    if (!user.password) {
+      return res.status(400).json({ message: 'Invalid credentials' });
+    }
 
+    const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
@@ -63,42 +56,24 @@ const loginUser = async (req, res) => {
     const token = generateToken(user._id);
     res.status(200).json({ token });
   } catch (error) {
-    console.error('Error logging in:', error); // Log error for debugging
+    console.error('Error logging in:', error);
     res.status(500).json({ message: 'Error logging in', error });
   }
 };
 
-// Add User
-const addUser = async (req, res) => {
-  const { name, email, phone, password } = req.body;
-  if (!name || !email || !phone || !password) {
-    return res.status(400).json({ message: 'All fields are required' });
-  }
 
-  try {
-    // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const user = new User({ name, email, phone, password: hashedPassword });
-    await user.save();
-    res.status(201).json(user);
-  } catch (error) {
-    console.error('Error creating user:', error); // Log error for debugging
-    res.status(500).json({ message: 'Error creating user', error });
-  }
-};
-
-// Get All Users
+// @desc Get all users
 const getUsers = async (req, res) => {
   try {
     const users = await User.find().sort({ createdAt: 1 });
     res.status(200).json(users);
   } catch (error) {
-    console.error('Error fetching users:', error); // Log error for debugging
+    console.error('Error fetching users:', error);
     res.status(500).json({ message: 'Error fetching users', error });
   }
 };
 
-// Get User by ID
+// @desc Get user by ID
 const getUserById = async (req, res) => {
   const { id } = req.params;
   try {
@@ -106,12 +81,12 @@ const getUserById = async (req, res) => {
     if (!user) return res.status(404).json({ message: 'User not found' });
     res.status(200).json(user);
   } catch (error) {
-    console.error('Error fetching user:', error); // Log error for debugging
+    console.error('Error fetching user:', error);
     res.status(500).json({ message: 'Error fetching user', error });
   }
 };
 
-// Update User
+// @desc Update user
 const updateUser = async (req, res) => {
   const { id } = req.params;
   const { name, email, phone } = req.body;
@@ -121,12 +96,12 @@ const updateUser = async (req, res) => {
     if (!user) return res.status(404).json({ message: 'User not found' });
     res.status(200).json(user);
   } catch (error) {
-    console.error('Error updating user:', error); // Log error for debugging
+    console.error('Error updating user:', error);
     res.status(500).json({ message: 'Error updating user', error });
   }
 };
 
-// Delete User
+// @desc Delete user
 const deleteUser = async (req, res) => {
   const { id } = req.params;
   try {
@@ -134,17 +109,16 @@ const deleteUser = async (req, res) => {
     if (!user) return res.status(404).json({ message: 'User not found' });
     res.status(200).json({ message: 'User deleted successfully' });
   } catch (error) {
-    console.error('Error deleting user:', error); // Log error for debugging
+    console.error('Error deleting user:', error);
     res.status(500).json({ message: 'Error deleting user', error });
   }
 };
 
 module.exports = {
-  addUser,
+  registerUser,
+  loginUser,
   getUsers,
   getUserById,
   updateUser,
   deleteUser,
-  registerUser,
-  loginUser,
 };

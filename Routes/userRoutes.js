@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-const { addUser, getUsers, getUserById, updateUser, deleteUser, registerUser, loginUser } = require('../Controller/UserController');
+const { getUsers, getUserById, updateUser, deleteUser, registerUser, loginUser } = require('../Controller/UserController');
 const { protect } = require('../middleware/authMiddleware');
 // Optional: protected route example
 router.get('/profile', protect, (req, res) => {
@@ -11,7 +11,6 @@ router.get('/profile', protect, (req, res) => {
 // Admin or utility routes
 router.post('/register', registerUser);
 router.post('/login', loginUser);
-router.post('/', addUser);
 router.get('/', getUsers);
 router.get('/:id', getUserById);
 router.put('/:id', updateUser);
