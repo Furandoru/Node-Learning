@@ -17,8 +17,7 @@ const registerUser = async (req, res) => {
       return res.status(400).json({ message: 'User already exists' });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const user = new User({ name, email, phone, password: hashedPassword });
+    const user = new User({ name, email, phone, password });
     await user.save();
 
     const token = generateToken(user._id);
@@ -38,13 +37,8 @@ const loginUser = async (req, res) => {
   }
 
   try {
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(400).json({ message: 'Invalid credentials' });
-    }
-
-    // Ensure user.password is a string and not undefined/null
-    if (!user.password) {
+    const user = await User.findOne({ email }).select('+password');
+    if (!user || !user.password) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
@@ -56,8 +50,8 @@ const loginUser = async (req, res) => {
     const token = generateToken(user._id);
     res.status(200).json({ token });
   } catch (error) {
-    console.error('Error logging in:', error);
-    res.status(500).json({ message: 'Error logging in', error });
+    console.error('Error logging in:', error.message);
+    res.status(500).json({ message: 'Error logging in', error: error.message });
   }
 };
 
