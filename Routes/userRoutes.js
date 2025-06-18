@@ -9,8 +9,10 @@ router.get('/profile', protect, (req, res) => {
 });
 
 // Admin or utility routes
-router.post('/register', registerUser);
+router.post('/register',  registerUser);
 router.post('/login', loginUser);
+
+router.use(protect);
 router.get('/', getUsers);
 router.get('/:id', getUserById);
 router.put('/:id', updateUser);
